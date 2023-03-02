@@ -1,3 +1,4 @@
+let fetchData = [];
 const loadData =async () =>{
     const URL = `https://openapi.programming-hero.com/api/news/categories`;
     const res = await fetch(URL);
@@ -25,10 +26,12 @@ const fetchCategoryNews = async (category_id,category_name) => {
     const res = await fetch(URL);
     const data = await res.json();
     document.getElementById('items').innerText = data.data.length;
-    document.getElementById('categories-item').innerText =category_name;
+    document.getElementById('categories-item').innerText =category_name ? category_name : "Default Categories";
  showNews(data.data);
+ fetchData = data.data;
 }
 const showNews = (news) =>{
+  
     const newsContainer = document.getElementById('news-container');
     newsContainer.innerHTML = '';
     news.forEach(singleNews =>{
@@ -69,7 +72,7 @@ const showNews = (news) =>{
                             <i class="fa-solid fa-star-half"></i>
                           </div>
                           <div  class="col text-primary text-end">
-                            <i onclick="showNewsDetails('${singleNews._id}')" style="cursor:pointer" class="fa-2x fa-solid fa-arrow-right"></i>
+                            <i data-bs-toggle="modal" data-bs-target="#newsModal" onclick="showNewsDetails('${singleNews._id}')" style="cursor:pointer" class="fa-2x fa-solid fa-arrow-right"></i>
                            
                           </div>
                        </div>
@@ -90,8 +93,40 @@ const showNewsDetails = async (_id) => {
    const URL = `https://openapi.programming-hero.com/api/news/${_id} `;
    const res =await fetch(URL);
    const data = await res.json();
-   console.log(data.data[0]);
    const newsDetails = data.data[0];
+   ShowModalDetails(newsDetails)
+}
+
+const ShowModalDetails = (data) =>{
+
+    document.getElementById('newsModalLabel').innerText = data.title;
+    const modalContainer = document.getElementById('modalContainer');
+    modalContainer.innerHTML = `
+    <img class="w-75 mx-auto text-center" src="${data.image_url}" alt="">
+    <p>${data.details}</p>
+    `;
+}
+const trendingAndTodaysPick = (todaysPick) =>{
+   
+    showNews(todaysPick);
+    document.getElementById('items').innerText =todaysPick.length;
+  
+}
+const showTodaysPick =() =>{
+    const todaysPick = fetchData.filter(todaysPick =>todaysPick.others_info.is_todays_pick ===true);
+    trendingAndTodaysPick(todaysPick);
+  
+}
+const showTrending = () =>{
+    const trending = fetchData.filter(trending =>trending.others_info.is_trending ===true);
+    trendingAndTodaysPick(trending);
+
+}
+const sortBy = () =>{
+    const selectCategoryID = document.getElementById('select-categori').value;
+    // console.log(selectCategoryID)
+    fetchCategoryNews(selectCategoryID)
+
 }
 
 loadData();
